@@ -158,16 +158,6 @@ export default definePlugin({
     description: "Add Context Menu to ping all users who reacted to a message",
     authors: [{ name: "aorer.", id: 188165041336483842n }],
 
-    patches: [
-        {
-            find: ",reactionRef:",
-            replacement: {
-                match: /(\.Messages\.ADD_REACTION.*?}{1,100}),(\i\.get\(\i\)\))(?=])/,
-                replace: "$1,$2,$self.renderPingButton(arguments[0])",
-            },
-        },
-    ],
-
     contextMenus: {
         message: messageContextMenuPatch,
     },
