@@ -7,10 +7,9 @@
 import { Message, ReactionEmoji } from "@vencord/discord-types";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { ChannelStore, ComponentDispatch, Constants, FluxDispatcher, Menu, PermissionsBits, PermissionStore, React, RestAPI, SelectedChannelStore, showToast, Toasts, Tooltip, UserStore } from "@webpack/common";
+import { ChannelStore, ComponentDispatch, Constants, FluxDispatcher, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, Toasts, UserStore } from "@webpack/common";
 import definePlugin from "@utils/types";
 
-// Check Common Permissions/Channel Checks
 function validatePermissions(message: Message): boolean {
     const channel = ChannelStore.getChannel(message.channel_id);
     if (!channel) {
@@ -31,7 +30,6 @@ function validatePermissions(message: Message): boolean {
     return true;
 }
 
-// Insert Mentions into the chatbox
 function insertMentions(userIds: Set<string>): void {
     const currentUserId = UserStore.getCurrentUser().id;
     userIds.delete(currentUserId);
@@ -66,7 +64,6 @@ async function fetchReactorsByEmoji(channelId: string, messageId: string, emojiK
     return userIds;
 }
 
-
 async function fetchAllReactors(message: Message): Promise<Map<string, Set<string>>> {
     const reactorsByEmoji = new Map<string, Set<string>>();
 
@@ -83,7 +80,7 @@ async function fetchAllReactors(message: Message): Promise<Map<string, Set<strin
     return reactorsByEmoji;
 }
 
-async function pingReactorsByEmoji(message: Message,emoji: ReactionEmoji): Promise<void> {
+async function pingReactorsByEmoji(message: Message, emoji: ReactionEmoji): Promise<void> {
     if (!validatePermissions(message)) return;
 
     try {
@@ -110,47 +107,67 @@ async function pingAllReactors(message: Message): Promise<void> {
     }
 }
 
-const messageContextMenuPatch: NavContextMenuPatchCallback = ( children, props) => {
-    const message = props?.message as Message;
-    if (!message || !message.reactions || message.reactions.length === 0)
-        return;
+const messageContextMenuPatch: NavContextMenuPatchCallback = (children, props) => {
+  const message = props?.message as Message;
+  if (!message || !message.reactions || message.reactions.length === 0)
+    return;
 
-    const group = findGroupChildrenByChildId("mark-unread", children);
+  const group = findGroupChildrenByChildId("mark-unread", children);
 
-    if (group) {
-        const reactionMenuItems = message.reactions.map((reaction) => {
-            const { emoji } = reaction;
-            const emojiDisplay = emoji.id
-                ? `${emoji.name} (${reaction.count})`
-                : `${emoji.name} (${reaction.count})`;
+  if (group) {
+    const reactionMenuItems = message.reactions.map((reaction) => {
+      const { emoji } = reaction;
 
-            return (
-                <Menu.MenuItem
-                    id={`ping-reactors-${emoji.name}-${emoji.id || "unicode"}`}
-                    key={`ping-reactors-${emoji.name}-${emoji.id || "unicode"}`}
-                    label={emojiDisplay}
-                    action={() => pingReactorsByEmoji(message, emoji)}
-                />
-            );
-        });
+      let emojiElement;
 
-        group.push(
-            <Menu.MenuItem
-                id="ping-reactors"
-                key="ping-reactors"
-                label="Ping Reactors"
-            >
-                <Menu.MenuItem
-                    id="ping-all-reactors"
-                    key="ping-all-reactors"
-                    label="All Reactions"
-                    action={() => pingAllReactors(message)}
-                />
-                <Menu.MenuSeparator />
-                {reactionMenuItems}
-            </Menu.MenuItem>,
-        );
-    }
+      if (emoji.id) {
+          // Custom emoji - render as image
+          const emojiUrl = IconUtils.getEmojiURL({
+              id: emoji.id,
+              animated: emoji.animated,
+              size: 16
+          });
+
+          emojiElement = (
+              <img
+                  src={emojiUrl}
+                  alt={emoji.name}
+                  className="emoji"
+                  style={{ width: "16px", height: "16px", verticalAlign: "middle", marginRight: "4px" }}
+              />
+          );
+      } else {
+          // Unicode emoji - just use the name (which is the actual emoji character)
+          emojiElement = <span style={{ marginRight: "4px" }}>{emoji.name}</span>;
+      }
+
+      return (
+          <Menu.MenuItem
+              id={`ping-reactors-${emoji.name}-${emoji.id || "unicode"}`}
+              key={`ping-reactors-${emoji.name}-${emoji.id || "unicode"}`}
+              label={<>{emojiElement}({reaction.count})</>}
+              action={() => pingReactorsByEmoji(message, emoji)}
+          />
+      );
+  });
+
+  group.push(
+    <Menu.MenuItem
+      id="ping-reactors"
+      key="ping-reactors"
+      label="Ping Reactors"
+    >
+      <Menu.MenuItem
+        id="ping-all-reactors"
+        key="ping-all-reactors"
+        label="All Reactions"
+        action={() => pingAllReactors(message)}
+      />
+      <Menu.MenuSeparator />
+      {reactionMenuItems}
+    </Menu.MenuItem>,
+    );
+  }
 };
 
 export default definePlugin({
