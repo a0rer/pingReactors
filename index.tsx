@@ -1,6 +1,6 @@
 /*
  * Vencord, a Discord client mod
- * Copyright (c) 2025 Vendicated and contributors*
+ * Copyright (c) 2025 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
@@ -75,9 +75,9 @@ async function fetchAllReactors(message: Message): Promise<Map<string, Set<strin
             reactorsByEmoji.set(display, userIds);
         }
     } catch (error) {
-        showToast("Failed to fetch Reactors", Toasts.Type.FAILURE);
+        showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
+        throw error;
     }
-    return reactorsByEmoji;
 }
 
 async function pingReactorsByEmoji(message: Message, emoji: ReactionEmoji): Promise<void> {
