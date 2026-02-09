@@ -56,10 +56,13 @@ async function fetchReactorsByEmoji(channelId: string, messageId: string, emojiK
 
         for (const user of res.body) {
             userIds.add(user.id);
-            FluxDispatcher.dispatch({ type: "USER_UPDATE", user });
         }
 
         after = res.body.length === 100 ? res.body[res.body.length - 1].id : null;
+ 
+        if (after) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
     } while (after);
     return userIds;
 }
