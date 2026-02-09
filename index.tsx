@@ -30,7 +30,12 @@ function validatePermissions(message: Message): boolean {
     return true;
 }
 
-function insertMentions(userIds: Set<string>): void {
+function insertMentions(userIds: Set<string>, message: Message): void { 
+    if (SelectedChannelStore.getChannelId() !== message.channel_id) {
+        showToast("You are in the wrong channel", Toasts.Type.FAILURE);
+        return;
+    }
+
     const currentUserId = UserStore.getCurrentUser().id;
     userIds.delete(currentUserId);
 
@@ -89,7 +94,7 @@ async function pingReactorsByEmoji(message: Message, emoji: ReactionEmoji): Prom
     try {
         const key = emoji.name + (emoji.id ? `:${emoji.id}` : "");
         const userIds = await fetchReactorsByEmoji(message.channel_id, message.id, key);
-        insertMentions(userIds);
+        insertMentions(userIds, message);
     } catch (error) {
         showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
     }
@@ -104,7 +109,7 @@ async function pingAllReactors(message: Message): Promise<void> {
         reactorsByEmoji.forEach((userIds) => {
             userIds.forEach((id) => allUserIds.add(id));
         });
-        insertMentions(allUserIds);
+        insertMentions(allUserIds, message);
     } catch (error) {
         showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
     }
