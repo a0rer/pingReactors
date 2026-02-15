@@ -21,3 +21,4 @@ The mentions will be automatically inserted into your chat input box.
 - You must be in the same channel as the message you're trying to ping reactors from
 - You must have valid permissions to send messages in the channel
 - The tool automatically excludes yourself from the mentions list in the discord chatbox
+- Some users when inserted into the chatbox will have ``@unknown-user`` which is normal behaviour and will properly load after the message has been sent
