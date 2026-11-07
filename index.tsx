@@ -7,32 +7,29 @@
 import { Message, ReactionEmoji } from "@vencord/discord-types";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { ChannelStore, ComponentDispatch, Constants, FluxDispatcher, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, Toasts, UserStore } from "@webpack/common";
+import { ChannelStore, ComponentDispatch, Constants, FluxDispatcher, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, UserStore } from "@webpack/common";
 import definePlugin from "@utils/types";
 
 function validatePermissions(message: Message): boolean {
     const channel = ChannelStore.getChannel(message.channel_id);
     if (!channel) {
-        showToast("Channel not found", Toasts.Type.FAILURE);
+        showToast({ text: "Channel not found", variant: "critical" });
         return false;
     }
     if (!PermissionStore.can(PermissionsBits.SEND_MESSAGES, channel)) {
-        showToast(
-            "Insufficient privileges to send messages in this channel",
-            Toasts.Type.FAILURE,
-        );
+        showToast({ text: "Insufficient privileges to send messages in this channel", variant: "critical" });
         return false;
     }
     if (SelectedChannelStore.getChannelId() !== message.channel_id) {
-        showToast("You are in the wrong channel", Toasts.Type.FAILURE);
+        showToast({ text: "You are in the wrong channel", variant: "critical" });
         return false;
     }
     return true;
 }
 
-function insertMentions(userIds: Set<string>, message: Message): void { 
+function insertMentions(userIds: Set<string>, message: Message): void {
     if (SelectedChannelStore.getChannelId() !== message.channel_id) {
-        showToast("You are in the wrong channel", Toasts.Type.FAILURE);
+        showToast({ text: "You are in the wrong channel", variant: "critical" });
         return;
     }
 
@@ -42,7 +39,7 @@ function insertMentions(userIds: Set<string>, message: Message): void {
     const mentions = Array.from(userIds).map((id) => `<@${id}>`).join(" ");
     insertTextIntoChatInputBox(mentions + " ");
     ComponentDispatch.dispatchToLastSubscribed("TEXTAREA_FOCUS");
-    showToast(`Added ${userIds.size} mention${userIds.size !== 1 ? "s" : ""} to input`, Toasts.Type.SUCCESS);
+    showToast({ text: `Added ${userIds.size} mention${userIds.size !== 1 ? "s" : ""} to input`, variant: "success" });
 }
 
 async function fetchReactorsByEmoji(channelId: string, messageId: string, emojiKey: string): Promise<Set<string>> {
@@ -64,7 +61,7 @@ async function fetchReactorsByEmoji(channelId: string, messageId: string, emojiK
         }
 
         after = res.body.length === 100 ? res.body[res.body.length - 1].id : null;
- 
+
         if (after) {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
@@ -83,9 +80,11 @@ async function fetchAllReactors(message: Message): Promise<Map<string, Set<strin
             reactorsByEmoji.set(display, userIds);
         }
     } catch (error) {
-        showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
+        showToast({ text: "Failed to fetch reactors", variant: "critical" });
         throw error;
     }
+
+    return reactorsByEmoji;
 }
 
 async function pingReactorsByEmoji(message: Message, emoji: ReactionEmoji): Promise<void> {
@@ -96,7 +95,7 @@ async function pingReactorsByEmoji(message: Message, emoji: ReactionEmoji): Prom
         const userIds = await fetchReactorsByEmoji(message.channel_id, message.id, key);
         insertMentions(userIds, message);
     } catch (error) {
-        showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
+        showToast({ text: "Failed to fetch reactors", variant: "critical" });
     }
 }
 
@@ -111,7 +110,7 @@ async function pingAllReactors(message: Message): Promise<void> {
         });
         insertMentions(allUserIds, message);
     } catch (error) {
-        showToast("Failed to fetch reactors", Toasts.Type.FAILURE);
+        showToast({ text: "Failed to fetch reactors", variant: "critical" });
     }
 }
 
