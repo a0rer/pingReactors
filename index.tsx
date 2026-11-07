@@ -7,7 +7,7 @@
 import { Message, ReactionEmoji } from "@vencord/discord-types";
 import { insertTextIntoChatInputBox } from "@utils/discord";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { ChannelStore, ComponentDispatch, Constants, FluxDispatcher, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, UserStore } from "@webpack/common";
+import { ChannelStore, ComponentDispatch, Constants, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, UserStore } from "@webpack/common";
 import definePlugin from "@utils/types";
 
 function validatePermissions(message: Message): boolean {
