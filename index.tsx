@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import { Message, ReactionEmoji } from "@vencord/discord-types";
-import { insertTextIntoChatInputBox } from "@utils/discord";
 import { findGroupChildrenByChildId, NavContextMenuPatchCallback } from "@api/ContextMenu";
-import { ChannelStore, ComponentDispatch, Constants, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, UserStore } from "@webpack/common";
+import { insertTextIntoChatInputBox } from "@utils/discord";
 import definePlugin from "@utils/types";
+import { Message, ReactionEmoji } from "@vencord/discord-types";
+import { ChannelStore, ComponentDispatch, Constants, IconUtils, Menu, PermissionsBits, PermissionStore, RestAPI, SelectedChannelStore, showToast, UserStore } from "@webpack/common";
 
 function validatePermissions(message: Message): boolean {
     const channel = ChannelStore.getChannel(message.channel_id);
@@ -36,7 +36,7 @@ function insertMentions(userIds: Set<string>, message: Message): void {
     const currentUserId = UserStore.getCurrentUser().id;
     userIds.delete(currentUserId);
 
-    const mentions = Array.from(userIds).map((id) => `<@${id}>`).join(" ");
+    const mentions = Array.from(userIds).map(id => `<@${id}>`).join(" ");
     insertTextIntoChatInputBox(mentions + " ");
     ComponentDispatch.dispatchToLastSubscribed("TEXTAREA_FOCUS");
     showToast({ text: `Added ${userIds.size} mention${userIds.size !== 1 ? "s" : ""} to input`, variant: "success" });
@@ -105,8 +105,8 @@ async function pingAllReactors(message: Message): Promise<void> {
     try {
         const reactorsByEmoji = await fetchAllReactors(message);
         const allUserIds = new Set<string>();
-        reactorsByEmoji.forEach((userIds) => {
-            userIds.forEach((id) => allUserIds.add(id));
+        reactorsByEmoji.forEach(userIds => {
+            userIds.forEach(id => allUserIds.add(id));
         });
         insertMentions(allUserIds, message);
     } catch (error) {
@@ -122,7 +122,7 @@ const messageContextMenuPatch: NavContextMenuPatchCallback = (children, props) =
   const group = findGroupChildrenByChildId("mark-unread", children);
 
   if (group) {
-    const reactionMenuItems = message.reactions.map((reaction) => {
+    const reactionMenuItems = message.reactions.map(reaction => {
       const { emoji } = reaction;
 
       let emojiElement;
